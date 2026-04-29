@@ -2045,19 +2045,46 @@ footer {
 
   document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
 
-  // Beta form
+  // Beta form - MailerLite integration via hidden embedded form
   const form = document.getElementById('betaForm');
   const counter = document.getElementById('counter');
-  form.addEventListener('submit', (e) => {
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = e.target.querySelector('input');
     const btn = e.target.querySelector('button');
-    if (input.value.includes('@')) {
+    const email = input.value.trim();
+
+    if (!email.includes('@')) return;
+
+    // État de chargement
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Envoi...';
+    btn.style.opacity = '0.7';
+
+    // Trouver le formulaire MailerLite caché
+    const mlForm = document.querySelector('.ml-embedded form');
+
+    if (mlForm) {
+      // Remplir et soumettre le form MailerLite caché
+      const mlInput = mlForm.querySelector('input[type="email"]');
+      if (mlInput) {
+        mlInput.value = email;
+        const submitBtn = mlForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.click();
+      }
+    }
+
+    // UI de succès
+    setTimeout(() => {
       btn.textContent = '✓ Inscrit';
       btn.style.background = 'transparent';
       btn.style.color = 'var(--red)';
+      btn.style.opacity = '1';
       input.value = '';
-      input.placeholder = 'Bienvenue dans la meute. On te contacte vite.';
+      input.placeholder = 'Bienvenue dans la meute. Check tes mails !';
+
       // Décrémenter le compteur
       const current = parseInt(counter.textContent);
       if (current > 0) {
@@ -2065,7 +2092,7 @@ footer {
         counter.style.transform = 'scale(1.15)';
         setTimeout(() => counter.style.transform = 'scale(1)', 300);
       }
-    }
+    }, 1200);
   });
 
   // Smooth speed counter on hero stat
@@ -2086,6 +2113,22 @@ footer {
     if (speedEl) animateValue(speedEl, 0, 87, 2000);
   }, 1500);
 </script>
+
+
+<!-- MailerLite hidden embedded form (relays submissions to MailerLite) -->
+<div style="position:absolute; left:-9999px; top:-9999px; visibility:hidden; pointer-events:none;" aria-hidden="true">
+  <div class="ml-embedded" data-form="32ntZJ"></div>
+</div>
+
+<!-- MailerLite Universal -->
+<script>
+  (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+  .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+  n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+  (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+  ml('account', '2303043');
+</script>
+<!-- End MailerLite Universal -->
 
 </body>
 </html>
