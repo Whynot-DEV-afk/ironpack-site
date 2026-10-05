@@ -1,0 +1,74 @@
+/* The image and display always share the exact same coordinate system. */
+.cockpit-plane,.helmet-plane{
+  width:max(100vw,177.683316svh);
+  height:auto;
+  aspect-ratio:1672/941;
+}
+.phone-ui,.helmet-phone{
+  left:0;top:0;
+  transform-origin:0 0;
+  transform:none;
+  visibility:hidden;
+  border:0;
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:none;
+  color:#dedfe1;
+  filter:brightness(.84) saturate(.83);
+  background:#090d11;
+}
+.phone-ui[data-fitted],.helmet-phone[data-fitted]{visibility:visible}
+.phone-ui{
+  width:328px;height:608px;
+  border-radius:7px;
+  padding:14px 16px 16px;
+}
+.phone-ui::after,.helmet-phone::after{
+  content:'';
+  position:absolute;inset:0;z-index:10;pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(125deg,#c3d7e40a,transparent 37%,#becbd004 65%,#0000001a);
+  box-shadow:inset 0 0 9px 2px #0008;
+}
+.phone-time{font:500 12px/1.4 Inter,Arial,sans-serif;color:#c9cdd2}
+.app-logo{font:700 28px/1.2 var(--display);margin:15px 0 9px;letter-spacing:.04em}
+.mini-map{margin:2px -4px 10px;background:radial-gradient(ellipse at 65% 40%,#172028,#0c1218 80%);border-radius:5px;overflow:hidden}
+.mini-map svg{opacity:.92}
+.map-road{stroke:#343f49;stroke-width:2}
+.phone-ui .map-label{font:500 11px/1 Inter,Arial,sans-serif;letter-spacing:2px;top:34%;left:10%}
+.trip{gap:6px}
+.trip strong{font-size:12px;letter-spacing:1px;color:#a7aeb7}
+.trip>span{font-size:25px;line-height:1.4}
+.trip b{font-size:17px;margin-left:12px}
+.start-ride{font-size:17px;line-height:1.2;padding:15px 17px;margin-top:14px;min-height:50px;border-radius:5px;box-shadow:none}
+.tap-ripple{width:85px;left:121px;top:496px;border-width:1px}
+.phone-splash{background:#040507}
+.splash-brand{width:164px;gap:17px}
+.splash-brand img{width:164px;max-height:none}
+.splash-brand strong{font:700 26px/1 var(--display);letter-spacing:2px}
+.splash-light{filter:blur(12px)}
+.helmet-phone{
+  width:220px;height:330px;
+  padding:11px 12px 12px;
+  border-radius:5px;
+  background:#0c1218;
+  filter:brightness(.72) saturate(.78) blur(.2px);
+}
+.helmet-app-logo{font:700 18px/1.2 var(--display);letter-spacing:1px}
+.phone-guidance{font:600 15px/1.4 Inter,Arial,sans-serif;gap:10px;padding:8px 0 5px}
+.phone-guidance>span{font-size:29px;line-height:1}
+.helmet-phone svg{display:block;background:radial-gradient(ellipse at 60% 50%,#17212a,#0c1218 85%);border-radius:3px}
+.helmet-phone .map-road{stroke-width:1.3px}
+.helmet-phone .map-route{stroke-width:2.5px}
+.helmet-phone .route-shadow{stroke-width:7px}
+.helmet-phone-footer{font:600 14px/1.5 Inter,Arial,sans-serif;padding-top:8px}
+.helmet-phone-footer span{color:#9fa6b1}
+
+/* User-provided app capture, projected inside the existing measured glass. */
+.phone-ui,.helmet-phone{padding:0}
+.app-capture{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;object-fit:fill;border-radius:inherit}
+.phone-ui>.app-capture{opacity:var(--app-ready)}
+.phone-ui>.capture-start{position:absolute;left:64.5%;top:73.6%;width:29%;height:6.4%;min-height:0;margin:0;padding:0;z-index:2;border:0;border-radius:12px;background:transparent;box-shadow:none;transform:none}
+.phone-ui>.capture-start:hover{background:#ffffff14}
+.phone-ui>.capture-start:focus-visible{outline:2px solid white;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.phone-ui>.app-capture{opacity:1}}
