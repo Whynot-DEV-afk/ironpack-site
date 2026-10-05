@@ -2045,9 +2045,45 @@ footer {
 
   document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
 
-  // Beta form - MailerLite integration via hidden embedded form
+  /*
+   * Inscription à la beta — relayée au formulaire MailerLite caché.
+   *
+   * ─── Ce qui a changé le 05/10/2026, et pourquoi ────────────────────────────
+   * La version précédente affichait « ✓ Inscrit · Check tes mails ! » au bout de
+   * 1,2 seconde, systématiquement, sans jamais regarder si quoi que ce soit était
+   * parti. Elle le disait même quand le formulaire MailerLite n'avait pas été
+   * trouvé — ce qui arrive pour de bon : les bloqueurs de publicité coupent
+   * assets.mailerlite.com, et c'est l'un des domaines les plus bloqués du web.
+   *
+   * Le visiteur repartait alors convaincu d'être inscrit, et attendait un mail qui
+   * n'arriverait jamais. Pour un lancement qui ne tient qu'à une liste d'attente,
+   * c'est le seul défaut qui coûte vraiment : il ne se voit pas, et il fait perdre
+   * exactement les gens les plus motivés.
+   *
+   * On attend donc la vraie réponse de MailerLite — il dévoile son propre bloc de
+   * confirmation — avant d'annoncer quoi que ce soit. Et quand ça ne marche pas, on
+   * le dit, avec une adresse où écrire.
+   */
   const form = document.getElementById('betaForm');
   const counter = document.getElementById('counter');
+  const hidden = document.querySelector('.ml-embedded');
+
+  /** Vrai quand MailerLite a dévoilé son bloc de confirmation : l'inscription a pris. */
+  const confirmedByMailerLite = () => {
+    const success = hidden && hidden.querySelector('.ml-form-successBody');
+    return !!success && getComputedStyle(success).display !== 'none';
+  };
+
+  /** Attend une condition, par petits coups d'œil, jusqu'à expiration du délai. */
+  const waitFor = (test, timeoutMs) => new Promise((resolve) => {
+    const startedAt = Date.now();
+    const tick = () => {
+      if (test()) return resolve(true);
+      if (Date.now() - startedAt >= timeoutMs) return resolve(false);
+      setTimeout(tick, 150);
+    };
+    tick();
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -2055,44 +2091,64 @@ footer {
     const btn = e.target.querySelector('button');
     const email = input.value.trim();
 
-    if (!email.includes('@')) return;
-
-    // État de chargement
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = 'Envoi...';
-    btn.style.opacity = '0.7';
-
-    // Trouver le formulaire MailerLite caché
-    const mlForm = document.querySelector('.ml-embedded form');
-
-    if (mlForm) {
-      // Remplir et soumettre le form MailerLite caché
-      const mlInput = mlForm.querySelector('input[type="email"]');
-      if (mlInput) {
-        mlInput.value = email;
-        const submitBtn = mlForm.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.click();
-      }
+    // Un « @ » ne suffisait pas : « moi@moi » passait, et partait se faire refuser
+    // plus loin sans que personne ne le sache.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      input.setCustomValidity('Il manque quelque chose à cette adresse.');
+      input.reportValidity();
+      setTimeout(() => input.setCustomValidity(''), 100);
+      return;
     }
 
-    // UI de succès
-    setTimeout(() => {
-      btn.textContent = '✓ Inscrit';
+    const settle = (label, color, placeholder) => {
+      btn.textContent = label;
       btn.style.background = 'transparent';
-      btn.style.color = 'var(--red)';
+      btn.style.color = color;
       btn.style.opacity = '1';
-      input.value = '';
-      input.placeholder = 'Bienvenue dans la meute. Check tes mails !';
+      input.placeholder = placeholder;
+    };
 
-      // Décrémenter le compteur
-      const current = parseInt(counter.textContent);
-      if (current > 0) {
-        counter.textContent = current - 1;
-        counter.style.transform = 'scale(1.15)';
-        setTimeout(() => counter.style.transform = 'scale(1)', 300);
-      }
-    }, 1200);
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    btn.style.opacity = '0.7';
+
+    const mlForm = hidden && hidden.querySelector('form');
+    const mlInput = mlForm && mlForm.querySelector('input[type="email"]');
+    const mlSubmit = mlForm && mlForm.querySelector('button[type="submit"]');
+
+    if (!mlInput || !mlSubmit) {
+      // Presque toujours un bloqueur de publicité. On ne promet rien, on donne une
+      // porte de sortie — et l'adresse reste à l'écran, prête à être recopiée.
+      settle('Envoi impossible', 'var(--gray)', 'Écris-nous à contact@ironpack.app');
+      btn.disabled = false;
+      return;
+    }
+
+    mlInput.value = email;
+    // MailerLite écoute les frappes pour valider son champ : sans cet événement, il
+    // considère son formulaire vide et refuse de l'envoyer.
+    mlInput.dispatchEvent(new Event('input', { bubbles: true }));
+    mlSubmit.click();
+
+    // Quinze secondes : largement de quoi couvrir un réseau mobile poussif, sans
+    // laisser quelqu'un devant un bouton figé.
+    const ok = await waitFor(confirmedByMailerLite, 15000);
+
+    if (!ok) {
+      settle('Réessayer', 'var(--gray)', 'Pas de confirmation — réessaie dans un instant');
+      btn.disabled = false;
+      return;
+    }
+
+    settle('✓ Inscrit', 'var(--red)', 'Bienvenue dans la meute. Un mail arrive.');
+    input.value = '';
+
+    const current = parseInt(counter.textContent, 10);
+    if (current > 0) {
+      counter.textContent = current - 1;
+      counter.style.transform = 'scale(1.15)';
+      setTimeout(() => counter.style.transform = 'scale(1)', 300);
+    }
   });
 
   // Smooth speed counter on hero stat
