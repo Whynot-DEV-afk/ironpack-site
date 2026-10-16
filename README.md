@@ -5,6 +5,8 @@ Pas de compilation : un push sur main déclenche le déploiement Vercel.
 
 ## Structure
 
+- parrainage.html, parrainage.css, parrainage.js : invitation personnelle via `/parrainage?code=…`. Code opaque validé localement, copie au geste, lien vers l’app déjà installée. Aucun suivi publicitaire ni cookie. Pas de téléchargement public tant que les stores ne sont pas disponibles ; lien vers les informations bêta et saisie manuelle après installation. Le serveur de l’app vérifie le code lors de son association, jamais la page publique. Conditions de points visibles ; aucun gain pour l’installation seule.
+
 - index.html : présentation et inscription aux nouvelles de la bêta.
 - cinema.*, refinement.css, features.* : scènes et présentation.
 - phone-fit.* : projection de la capture dans les deux téléphones.
